@@ -45,8 +45,8 @@ def process_image(data_url):
     processed_pixel_matrix = np.array(processed_image)
     input_tensor = processed_image.unsqueeze(0)
 
-    # image_filename = os.path.join(upload_folder, 'uploaded_image.png')
-    # inverted_image.save(image_filename)
+    image_filename = os.path.join(upload_folder, 'uploaded_image.png')
+    inverted_image.save(image_filename)
 
     return input_tensor
 
