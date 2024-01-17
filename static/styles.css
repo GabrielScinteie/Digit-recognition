@@ -3,14 +3,13 @@ canvas {
 }
 
 #resultDisplay {
-    max-width: 400px; /* Set a maximum width for the result display */
+    max-width: 400px;
     margin: 20px 0;
 }
 
-/* Style the canvas container to control its size */
 #chartContainer {
-    max-width: 400px; /* Set a maximum width for the chart container */
-    max-height: 200px; /* Set a maximum height for the chart container */
+    max-width: 400px;
+    max-height: 200px;
 }
 
 body {
