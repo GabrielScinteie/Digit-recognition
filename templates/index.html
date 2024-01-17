@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Recognition</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Digit Recognition</h1>
+    <canvas id="digitCanvas" width="280" height="280" style="width: 280px; height: 280px;"></canvas>
+    <br>
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="uploadImage()">Upload</button>
+
+    <div>
+        <div id="resultDisplay"></div>
+    </div>
+
+    <div id="chartContainer">
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('digitCanvas');
+        const context = canvas.getContext('2d');
+
+        let drawing = false;
+
+        context.fillStyle = 'rgba(255, 255, 255, 1)';  // Culoarea alba a canvas-ului
+        context.strokeStyle = 'rgba(0, 0, 0, 1)';      // Culoare neagra a scrisului
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        canvas.addEventListener('mousedown', () => {
+            drawing = true;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            context.beginPath();
+        });
+
+        canvas.addEventListener('mousemove', draw);
+
+        function draw(e) {
+            if (!drawing) return;
+
+            context.lineWidth = 20;
+            context.lineCap = 'round';
+
+            context.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        function clearCanvas() {
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function uploadImage() {
+            const imageDataURL = canvas.toDataURL('image/png');
+            console.log('Base64 Image Link:', imageDataURL);
+            fetch('/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: imageDataURL })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                displayResult(data.predicted_label, data.probability_distribution);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle errors
+            });
+        }
+
+        function displayResult(result, probability_distribution) {
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.innerHTML = `<p>Predicted result is ${result}</p>`;
+
+            // Canvas pentru tabel
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 400;
+            chartCanvas.height = 200;
+
+            // Append the chart canvas to the chart container
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = ''; // Clear previous content
+            chartContainer.appendChild(chartCanvas);
+
+            // Draw the probability distribution chart using Chart.js
+            drawProbabilityChart(chartCanvas, probability_distribution[0]);
+        }
+
+        function drawProbabilityChart(canvas, probabilityDistribution) {
+            const ctx = canvas.getContext('2d');
+
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from(Array(probabilityDistribution.length).keys()), // Index labels
+                    datasets: [{
+                        label: 'Probability Distribution',
+                        data: probabilityDistribution,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Light blue background color
+                        borderColor: 'rgba(75, 192, 192, 1)', // Border color
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
