@@ -13,6 +13,7 @@ class CNN(nn.Module):
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
+
         # Facem flatten pentru a putea folosi straturile Fully Connected
         x = x.view(-1, 64 * 7 * 7)
 
